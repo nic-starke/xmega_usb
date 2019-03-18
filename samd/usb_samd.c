@@ -2,24 +2,13 @@
 #include "samd/usb_samd.h"
 #include "samd/usb_samd_internal.h"
 
-#define NVM_USB_PAD_TRANSN_POS  45
-#define NVM_USB_PAD_TRANSN_SIZE 5
-#define NVM_USB_PAD_TRANSP_POS  50
-#define NVM_USB_PAD_TRANSP_SIZE 5
-#define NVM_USB_PAD_TRIM_POS  55
-#define NVM_USB_PAD_TRIM_SIZE 3
-
-#undef ENABLE
-
-#define USB_GCLK_GEN                    0
-
-void usb_init(){
+void usb_samd_init(uint32_t clock_id) {
 	uint32_t pad_transn, pad_transp, pad_trim;
 
 	PM->APBBMASK.reg |= PM_APBBMASK_USB;
 
 	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN |
-			GCLK_CLKCTRL_GEN(USB_GCLK_GEN) |
+			GCLK_CLKCTRL_GEN(clock_id) |
 			GCLK_CLKCTRL_ID(USB_GCLK_ID);
 
 	/* Reset */
@@ -30,30 +19,21 @@ void usb_init(){
 	while (USB->DEVICE.SYNCBUSY.bit.ENABLE);
 
 	/* Load Pad Calibration */
-	pad_transn = ( *((uint32_t *)(NVMCTRL_OTP4)
-			+ (NVM_USB_PAD_TRANSN_POS / 32))
-		>> (NVM_USB_PAD_TRANSN_POS % 32))
-		& ((1 << NVM_USB_PAD_TRANSN_SIZE) - 1);
+	pad_transn = (*(uint32_t*)USB_FUSES_TRANSN_ADDR & USB_FUSES_TRANSN_Msk) >> USB_FUSES_TRANSN_Pos;
 
-	if (pad_transn == 0x1F) {
+	if (pad_transn == (USB_FUSES_TRANSN_Msk >> USB_FUSES_TRANSN_Pos)) {
 		pad_transn = 5;
 	}
 
-	pad_transp =( *((uint32_t *)(NVMCTRL_OTP4)
-			+ (NVM_USB_PAD_TRANSP_POS / 32))
-			>> (NVM_USB_PAD_TRANSP_POS % 32))
-			& ((1 << NVM_USB_PAD_TRANSP_SIZE) - 1);
+	pad_transp = (*(uint32_t*)USB_FUSES_TRANSP_ADDR & USB_FUSES_TRANSP_Msk) >> USB_FUSES_TRANSP_Pos;
 
-	if (pad_transp == 0x1F) {
+	if (pad_transp == (USB_FUSES_TRANSP_Msk >> USB_FUSES_TRANSP_Pos)) {
 		pad_transp = 29;
 	}
 
-	pad_trim =( *((uint32_t *)(NVMCTRL_OTP4)
-			+ (NVM_USB_PAD_TRIM_POS / 32))
-			>> (NVM_USB_PAD_TRIM_POS % 32))
-			& ((1 << NVM_USB_PAD_TRIM_SIZE) - 1);
+	pad_trim = (*(uint32_t*)USB_FUSES_TRIM_ADDR & USB_FUSES_TRIM_Msk) >> USB_FUSES_TRIM_Pos;
 
-	if (pad_trim == 0x7) {
+	if (pad_trim == (USB_FUSES_TRIM_Msk >> USB_FUSES_TRIM_Pos)) {
 		pad_trim = 3;
 	}
 
@@ -73,7 +53,7 @@ void usb_init(){
 #define USB_EPTYPE_INTERRUPT 4
 #define USB_EPTYPE_DUAL_BANK 5
 
-void usb_reset(){
+void usb_reset(void){
 	usb_endpoints[0].DeviceDescBank[0].ADDR.reg = (uint32_t) &ep0_buf_out;
 	usb_endpoints[0].DeviceDescBank[0].PCKSIZE.bit.SIZE=USB_EP_size_to_gc(USB_EP0_SIZE);
 	usb_endpoints[0].DeviceDescBank[1].ADDR.reg = (uint32_t) &ep0_buf_in;
@@ -205,9 +185,9 @@ inline void usb_ep0_stall(void) {
 
 void usb_set_speed(USB_Speed speed) {
 	if (USB_SPEED_FULL == speed) {
-		USB->DEVICE.CTRLB.bit.SPDCONF = USB_DEVICE_CTRLB_SPDCONF_0_Val;
+		USB->DEVICE.CTRLB.bit.SPDCONF = USB_DEVICE_CTRLB_SPDCONF_FS_Val;
 	} else if(USB_SPEED_LOW == speed) {
-		USB->DEVICE.CTRLB.bit.SPDCONF = USB_DEVICE_CTRLB_SPDCONF_1_Val;
+		USB->DEVICE.CTRLB.bit.SPDCONF = USB_DEVICE_CTRLB_SPDCONF_LS_Val;
 	}
 }
 USB_Speed usb_get_speed() {

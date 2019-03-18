@@ -1,7 +1,6 @@
 #pragma once
 
-#include <parts.h>
-#include <io.h>
+#include <sam.h>
 #include "usb.h"
 
 extern UsbDeviceDescriptor usb_endpoints[];
@@ -11,6 +10,8 @@ extern const uint8_t usb_num_endpoints;
 
 #define USB_ENDPOINTS(NUM_EP) \
 	const uint8_t usb_num_endpoints = (NUM_EP); \
-	UsbDeviceDescriptor usb_endpoints[(NUM_EP)+1];
+	UsbDeviceDescriptor usb_endpoints[NUM_EP];
 
+void usb_samd_init(uint32_t clock_id);
+	
 void* samd_serial_number_string_descriptor();

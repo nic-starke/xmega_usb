@@ -38,9 +38,6 @@ bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting);
 /// Callbck for a GET_DESCRIPTOR request
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** descriptor_ptr);
 
-/// Initialize the USB controller
-void usb_init(void);
-
 /// Configure pull resistor to be detected by the host
 void usb_attach(void);
 
@@ -118,7 +115,7 @@ USB_Speed usb_get_speed(void);
 void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible);
 
 /// Convert a C string to a string descriptor in the ep0 IN buffer
-void* usb_string_to_descriptor(char* str);
+void* usb_string_to_descriptor(const char* str);
 
 /// Internal common methods called by the hardware API
 void usb_handle_setup(void);
