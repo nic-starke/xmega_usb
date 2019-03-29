@@ -128,7 +128,7 @@ inline usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, 
 	return 0;
 }
 
-inline bool usb_ep_empty(uint8_t ep) {
+static inline bool usb_ep_empty(uint8_t ep) {
 	if (ep & 0x80) {
 		return !(USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUS.bit.BK1RDY || usb_ep_pending(ep));
 	} else {
