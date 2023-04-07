@@ -106,6 +106,30 @@ inline void usb_reset_ep(uint8_t ep){
 	}
 }
 
+inline void usb_set_stall_ep(usb_ep ep) {
+	if (ep & 0x80) {
+		USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUSSET.reg = USB_DEVICE_EPSTATUS_STALLRQ1;
+	} else {
+		USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUSSET.reg = USB_DEVICE_EPSTATUS_STALLRQ0;
+	}
+}
+
+inline void usb_clr_stall_ep(usb_ep ep) {
+	if (ep & 0x80) {
+		USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUSCLR.reg = USB_DEVICE_EPSTATUS_STALLRQ1;
+	} else {
+		USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUSCLR.reg = USB_DEVICE_EPSTATUS_STALLRQ0;
+	}
+}
+
+inline bool usb_ep_is_stalled(usb_ep ep) {
+	if (ep & 0x80) {
+		return USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUS.bit.STALLRQ1 != 0;
+	} else {
+		return USB->DEVICE.DeviceEndpoint[ep & 0x3F].EPSTATUS.bit.STALLRQ0 != 0;
+	}
+}
+
 inline usb_bank usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len) {
 	usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.MULTI_PACKET_SIZE = len;
 	usb_endpoints[ep].DeviceDescBank[0].PCKSIZE.bit.BYTE_COUNT = 0;

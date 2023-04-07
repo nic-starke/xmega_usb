@@ -62,6 +62,7 @@ void usb_reset_ep(usb_ep ep);
 /// Set or clear stall on an endpoint
 void usb_set_stall_ep(usb_ep ep);
 void usb_clr_stall_ep(usb_ep ep);
+bool usb_ep_is_stalled(usb_ep ep);
 
 /// Returns true if an endpoint can start or queue a transfer
 bool usb_ep_ready(usb_ep ep);

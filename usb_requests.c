@@ -30,13 +30,27 @@ void usb_handle_setup(void){
 	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD){
 		switch (usb_setup.bRequest){
 			case USB_REQ_GetStatus:
-				ep0_buf_in[0] = 0;
+				if((usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK) == USB_RECIPIENT_ENDPOINT)
+					ep0_buf_in[0] = usb_ep_is_stalled(usb_setup.wIndex & 0x8f) != false;
+				else
+					ep0_buf_in[0] = 0;
 				ep0_buf_in[1] = 0;
 				usb_ep0_in(2);
 				return usb_ep0_out();
 
 			case USB_REQ_ClearFeature:
+				if((usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK) == USB_RECIPIENT_ENDPOINT) {
+					if(usb_setup.wValue == USB_FEATURE_EndpointHalt)
+						usb_clr_stall_ep(usb_setup.wIndex & 0x8f);
+				}
+				usb_ep0_in(0);
+				return usb_ep0_out();
+
 			case USB_REQ_SetFeature:
+				if((usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK) == USB_RECIPIENT_ENDPOINT) {
+					if(usb_setup.wValue == USB_FEATURE_EndpointHalt)
+						usb_set_stall_ep(usb_setup.wIndex & 0x8f);
+				}
 				usb_ep0_in(0);
 				return usb_ep0_out();
 
