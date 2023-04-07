@@ -81,6 +81,16 @@ typedef enum {
 	USB_CSCP_IADDeviceProtocol = 0x01,
 } USB_cscp;
 
+typedef enum {
+	USB_SDINDEX_MicrosoftOsStringDescriptor = 0xEE
+} USB_sdindex;
+
+typedef enum {
+	USB_CTRLREQ_CompatibleIdDescriptor = 0x004,
+	USB_CTRLREQ_ExtendedPropertiesDescriptor = 0x005
+} USB_ctrlreq;
+
+
 #define USB_CONFIG_POWER_MA(mA) ((mA)/2)
 #define USB_STRING_LEN(c) (sizeof(USB_DescriptorHeader) + ((c) * 2))
 
@@ -190,6 +200,14 @@ typedef struct {
 
 /// Microsoft WCID descriptor
 typedef struct {
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+    __CHAR16_TYPE__ wSignature[7];
+    uint8_t bVendorCode;
+    uint8_t padding;
+} __attribute__((packed)) USB_MicrosoftOSStringDescriptor;
+
+typedef struct {
 	uint8_t bFirstInterfaceNumber;
 	uint8_t reserved1;
 	uint8_t compatibleID[8];
@@ -205,3 +223,26 @@ typedef struct {
 	uint8_t reserved[7];
 	USB_MicrosoftCompatibleDescriptor_Interface interfaces[];
 } __attribute__((packed)) USB_MicrosoftCompatibleDescriptor;
+
+typedef struct {
+	uint32_t dwLength;
+	uint32_t dwDataType;
+} __attribute__((packed)) USB_MicrosofExtendedPropertyDescriptor_PropertySection;
+
+typedef struct {
+	uint16_t wLength;
+	__CHAR16_TYPE__ wPropertyName[];
+} __attribute__((packed)) USB_MicrosofExtendedPropertyDescriptor_PropertyName;
+
+typedef struct {
+	uint32_t dwLength;
+	uint8_t bDataBinary[];
+} __attribute__((packed)) USB_MicrosofExtendedPropertyDescriptor_PropertyData;
+
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t bCount;
+	USB_MicrosofExtendedPropertyDescriptor_PropertySection sections[];
+} __attribute__((packed)) USB_MicrosofExtendedPropertyDescriptor;
